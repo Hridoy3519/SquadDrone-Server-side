@@ -22,6 +22,7 @@ async function run() {
     const database = client.db("drone-website");
     const productCollections = database.collection("products");
     const reviewCollections = database.collection("reviews");
+    const orderCollections = database.collection("orders");
 
     //Get Api to get all the products
     app.get("/products", async (req, res) => {
@@ -42,6 +43,24 @@ async function run() {
         const cursor = reviewCollections.find({});
         const reviews = await cursor.toArray();
         res.send(reviews);
+    })
+
+    //API to load a single product
+    app.get("/products/:id", async(req,res) => {
+      const id = req.params.id;
+      console.log(id);
+      const query = {key : id};
+      const product = await productCollections.findOne(query);
+      console.log(product);
+      res.send(product);
+    })
+
+    //API to store orders
+    app.post('/orders', async(req,res) => {
+      const order = req.body;
+      const result = await orderCollections.insertOne(order);
+
+      res.json(result);
     })
   } finally {
     //await client.close();
