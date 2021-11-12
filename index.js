@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const { MongoClient } = require("mongodb");
+const ObjectId = require("mongodb").ObjectId;
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -45,6 +46,14 @@ async function run() {
       res.send(reviews);
     });
 
+    //Api to store user reviews
+    app.post("/reviews", async (req, res) => {
+      const review = req.body;
+      const result = await reviewCollections.insertOne(review);
+
+      res.json(result);
+    });
+
     //API to load a single product
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
@@ -60,6 +69,14 @@ async function run() {
       const order = req.body;
       const result = await orderCollections.insertOne(order);
 
+      res.json(result);
+    });
+
+    //API to delete an order
+    app.delete("/orders/:id", async (req, res) => {
+      const query = { _id: ObjectId(req.params.id) };
+
+      const result = await orderCollections.deleteOne(query);
       res.json(result);
     });
 
@@ -79,6 +96,14 @@ async function run() {
       };
       const result = await userCollections.updateOne(query, updateDoc, options);
       res.json(result);
+    });
+
+    //API to get all the orders of a user
+    app.post("/orders/user", async (req, res) => {
+      const userEmail = req.body.email;
+      const query = { email: userEmail };
+      const orders = await orderCollections.find(query).toArray();
+      res.json(orders);
     });
   } finally {
     //await client.close();
