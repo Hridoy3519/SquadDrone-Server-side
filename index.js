@@ -23,6 +23,7 @@ async function run() {
     const productCollections = database.collection("products");
     const reviewCollections = database.collection("reviews");
     const orderCollections = database.collection("orders");
+    const userCollections = database.collection("users");
 
     //Get Api to get all the products
     app.get("/products", async (req, res) => {
@@ -31,37 +32,54 @@ async function run() {
       let products;
       if (size) {
         products = await cursor.limit(size).toArray();
-      }
-      else{
-          products = await cursor.toArray();
+      } else {
+        products = await cursor.toArray();
       }
       res.send(products);
     });
 
     //Api to get user reviews
-    app.get('/reviews', async(req,res) => {
-        const cursor = reviewCollections.find({});
-        const reviews = await cursor.toArray();
-        res.send(reviews);
-    })
+    app.get("/reviews", async (req, res) => {
+      const cursor = reviewCollections.find({});
+      const reviews = await cursor.toArray();
+      res.send(reviews);
+    });
 
     //API to load a single product
-    app.get("/products/:id", async(req,res) => {
+    app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
       console.log(id);
-      const query = {key : id};
+      const query = { key: id };
       const product = await productCollections.findOne(query);
       console.log(product);
       res.send(product);
-    })
+    });
 
     //API to store orders
-    app.post('/orders', async(req,res) => {
+    app.post("/orders", async (req, res) => {
       const order = req.body;
       const result = await orderCollections.insertOne(order);
 
       res.json(result);
-    })
+    });
+
+    //API to save user on Mongodb
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await userCollections.insertOne(user);
+      res.json(result);
+    });
+
+    app.put("/users", async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email };
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: user,
+      };
+      const result = await userCollections.updateOne(query, updateDoc, options);
+      res.json(result);
+    });
   } finally {
     //await client.close();
   }
@@ -69,7 +87,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("SquadDrone server is running");
 });
 
 app.listen(port, () => {
