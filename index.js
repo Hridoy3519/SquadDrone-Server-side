@@ -39,6 +39,14 @@ async function run() {
       res.send(products);
     });
 
+    //Post API to post new Product
+    app.post("/addNewProduct", async (req, res) => {
+      const product = req.body;
+      console.log(product);
+      const result = await productCollections.insertOne(product);
+      res.json(result);
+    });
+
     //Api to get user reviews
     app.get("/reviews", async (req, res) => {
       const cursor = reviewCollections.find({});
@@ -57,9 +65,17 @@ async function run() {
     //API to load a single product
     app.get("/products/:id", async (req, res) => {
       const id = req.params.id;
-      const query = { key: id };
+      const query = { _id : ObjectId(id) };
       const product = await productCollections.findOne(query);
       res.send(product);
+    });
+
+    //API to delete a Product
+    app.delete("/products/:id", async (req, res) => {
+      const query = { _id: ObjectId(req.params.id) };
+
+      const result = await productCollections.deleteOne(query);
+      res.json(result);
     });
 
     //API to store orders
